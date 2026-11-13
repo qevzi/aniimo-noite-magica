@@ -518,7 +518,8 @@ html:not([lang="en-US"]) [data-mix="en"],html[lang="en-US"] :is([data-mix="pt"],
 .mixed-selected .mixed-choice-art img{width:30px;height:30px}
 .mixed-selected .mixed-choice-caption{padding-right:18px;box-sizing:border-box;min-height:0}
 .mixed-selected .mixed-choice .mixed-check{top:4px;right:4px;width:15px;height:15px}
-.mixed-selected .mixed-owned-count{margin:0 0 0 44px;height:24px}
+.mixed-owned-label{display:flex;align-items:center;justify-content:space-between;gap:4px;color:#493981;font-size:10px;font-weight:700}
+.mixed-selected .mixed-owned-count{margin:0;max-width:44px;height:24px}
 .mixed-picker-actions {
   display:flex;
   flex-wrap:wrap;
@@ -1317,7 +1318,7 @@ function renderMixed({pickerOnly = false} = {}) {
       '<div class="mixed-choice-wrap"><label class="mixed-choice"><input type="checkbox" data-choice="'+i+'" '+(mixedAvailable.has(item.name)?'checked':'')+'>'+
       '<span class="mixed-choice-art"><img src="'+item.image+'" alt="" loading="lazy"></span>'+
       '<span class="mixed-choice-caption"><span class="mixed-choice-name" title="'+safe(nameOf(item))+'">'+safe(nameOf(item))+'</span></span><span class="mixed-check" aria-hidden="true"></span></label>'+
-      (item.currency==='owned' ? '<input class="mixed-owned-count" type="number" min="1" max="'+Math.min(item.limit,100)+'" value="'+(mixedOwnedCounts.get(item.name) ?? 1)+'" data-owned="'+i+'" aria-label="'+tr('Quantidade no inventário: ','Owned quantity: ')+safe(nameOf(item))+'" '+(mixedAvailable.has(item.name)?'':'hidden')+'>' : '')+'</div>'
+      (item.currency==='owned' && mixedAvailable.has(item.name) ? '<label class="mixed-owned-label"><span>'+tr('No inventário','In inventory')+'</span><input class="mixed-owned-count" type="number" min="1" max="'+Math.min(item.limit,100)+'" value="'+(mixedOwnedCounts.get(item.name) ?? 1)+'" data-owned="'+i+'" aria-label="'+tr('Quantidade no inventário: ','Owned quantity: ')+safe(nameOf(item))+'"></label>' : '')+'</div>'
   ;
   const visible = items.map((item,i) => ({item,i})).filter(({item}) => fitsMixedLevel(item));
   const pending = visible.filter(({item}) => item.currency===mixedGroup && !mixedAvailable.has(item.name));

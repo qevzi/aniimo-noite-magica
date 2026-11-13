@@ -325,6 +325,23 @@ html:not([lang="en-US"]) [data-mix="en"],html[lang="en-US"] :is([data-mix="pt"],
 .mixed-piece-footer{grid-column:1 / -1;display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--muted)}
 .mixed-piece-footer small{font-size:11px}
 .mixed-piece-footer .swap-trigger{flex:none}
+.mixed-piece-footer{flex-wrap:wrap}
+.mixed-piece-buttons{display:inline-flex;flex-wrap:wrap;gap:5px;margin-left:auto}
+.mixed-place-toggle{padding:6px 9px;border:1px solid #d6c9f2;border-radius:9px;background:#fff;color:#49378d;font:800 12px system-ui,sans-serif;cursor:pointer}
+.mixed-place-toggle[aria-pressed=true]{background:#e0f2e9;color:#205944;border-color:#8abca8}
+.item.mixed-placed{border-color:#8abca8}
+.mixed-piece.mixed-placed > :is(.art,.name,.val),
+.mixed-piece.mixed-placed .mixed-piece-footer > small{opacity:.58}
+.mixed-piece.mixed-placed:focus-within > :is(.art,.name,.val),
+.mixed-piece.mixed-placed:focus-within .mixed-piece-footer > small{opacity:1}
+@media (hover:hover) and (pointer:fine){
+  .mixed-piece.mixed-placed:hover > :is(.art,.name,.val),
+  .mixed-piece.mixed-placed:hover .mixed-piece-footer > small{opacity:1}
+}
+@media print{
+  .mixed-piece.mixed-placed > :is(.art,.name,.val),
+  .mixed-piece.mixed-placed .mixed-piece-footer > small{opacity:1}
+}
 @media(max-width:560px){
   .mixed-panel .mixed-metrics .metric:first-child{grid-column:1 / -1}
   .mixed-panel .mixed-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -1159,6 +1176,11 @@ let mixedAvailable = new Set(mixedPlan.map(item => item.name));
 const mixedOwnedCounts = new Map();
 let mixedNotice = '';
 let mixedRemoved = '';
+const placedKey = 'aniimo-mixed-placed';
+let mixedPlaced = new Map();
+try {
+  mixedPlaced = new Map(JSON.parse(localStorage.getItem(placedKey) ?? '[]'));
+} catch {}
 let mixedLevel = 18;
 let mixedGroup = 'jelly';
 const fitsMixedLevel = item => (item.rvLevel ?? 0) <= mixedLevel;
@@ -1353,7 +1375,10 @@ function renderMixed({pickerOnly = false} = {}) {
   const selectedRail = list.querySelector('.mixed-selected .mixed-carousel');
   if (selectedRail) selectedRail.scrollLeft = selectedLeft;
   if (pickerOnly) return;
-  previous.innerHTML = mixedPlan.map((item,i) => {
+  const orderedCards = mixedPlan.map((item,i) => ({
+    item,i,placed:(mixedPlaced.get(item.name) ?? 0) >= item.quantity
+  })).sort((a,b) => Number(a.placed)-Number(b.placed));
+  previous.innerHTML = orderedCards.map(({item,i,placed}) => {
     const cost = item.currency === 'owned' ? tr('Do inventário','From inventory')
       : item.currency === 'star' ? mixedCurrencyIcon+' '+f(item.price*item.quantity)+' Wishstars'
       : mixedJellyIcon+' '+f(item.price*item.quantity)+' '+tr('jujubas','jellybeans');
@@ -1366,10 +1391,10 @@ function renderMixed({pickerOnly = false} = {}) {
       ['event',item.points,tr('Habit. no evento /un.','Event habitability / item')],
       ['load',item.load*item.quantity,tr('Carga total','Total load')]
     ];
-    return '<article class="item mixed-piece"><button class="art" type="button" data-preview="'+i+'" aria-label="'+tr('Ver detalhes de ','View details for ')+safe(nameOf(item))+'"><img src="'+item.image+'" width="256" height="256" alt="" loading="lazy"></button>'+
+    return '<article class="item mixed-piece'+(placed?' mixed-placed':'')+'"><button class="art" type="button" data-preview="'+i+'" aria-label="'+tr('Ver detalhes de ','View details for ')+safe(nameOf(item))+'"><img src="'+item.image+'" width="256" height="256" alt="" loading="lazy"></button>'+
       '<div class="name"><strong>'+safe(nameOf(item))+'</strong><small>'+source+' · '+(en?safe(item.req[1]):safe(item.name.replace(/^(Wonder Night - |Harvest Moon\s*[-:]\s*)/,'')))+'</small></div>'+
       stats.map(([cls,value,label]) => '<div class="val '+cls+'"><b>'+f(value)+'</b><small>'+label+'</small></div>').join('')+
-      '<div class="mixed-piece-footer"><small>'+cost+'</small><button type="button" class="swap-trigger" data-swap="'+i+'" aria-label="'+tr('Trocar ','Swap ')+safe(nameOf(item))+'">'+tr('↻ Trocar','↻ Swap')+'</button></div></article>';
+      '<div class="mixed-piece-footer"><small>'+cost+'</small><span class="mixed-piece-buttons"><button type="button" class="mixed-place-toggle" data-placed="'+i+'" aria-pressed="'+placed+'" aria-label="'+tr('Já coloquei: ','Placed: ')+safe(nameOf(item))+'">'+(placed?tr('✓ Colocado','✓ Placed'):'OK')+'</button><button type="button" class="swap-trigger" data-swap="'+i+'" aria-label="'+tr('Trocar ','Swap ')+safe(nameOf(item))+'">'+tr('↻ Trocar','↻ Swap')+'</button></span></div></article>';
   }).join('');
 }
 
@@ -1450,6 +1475,29 @@ mixedPanel.addEventListener('change', event => {
 mixedPanel.addEventListener('click', event => {
   const button = event.target.closest('button');
   if (!button) return;
+  if (button.matches('[data-placed]')) {
+    const item = mixedPlan[Number(button.dataset.placed)];
+    const placed = button.getAttribute('aria-pressed') !== 'true';
+    if (placed) mixedPlaced.set(item.name,item.quantity);
+    else mixedPlaced.delete(item.name);
+    try { localStorage.setItem(placedKey,JSON.stringify([...mixedPlaced])); } catch {}
+    button.setAttribute('aria-pressed',String(placed));
+    button.textContent = placed ? (document.documentElement.lang === 'en-US' ? '✓ Placed' : '✓ Colocado') : 'OK';
+    const card = button.closest('.mixed-piece');
+    const grid = card.parentElement;
+    card.classList.toggle('mixed-placed',placed);
+    if (placed) {
+      grid.append(card);
+    } else {
+      const index = Number(button.dataset.placed);
+      const next = [...grid.children].find(other => other !== card &&
+        (other.classList.contains('mixed-placed') ||
+          Number(other.querySelector('[data-placed]').dataset.placed) > index));
+      grid.insertBefore(card,next ?? null);
+    }
+    button.focus({preventScroll:true});
+    return;
+  }
   if (button.matches('.mixed-selection-search')) {
     renderSelectionDialog();
     selectionDialog.showModal();

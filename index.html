@@ -9,12 +9,13 @@
 <style>:root{color-scheme:light;--ink:#242b49;--muted:#535d79;--accent:#5141a0;--edge:#fff;--shadow:0 12px 28px #34336a18}
 *{box-sizing:border-box}body{margin:0;color:var(--ink);font:600 15px/1.5 "Plus Jakarta Sans",system-ui,sans-serif;background:radial-gradient(ellipse at 85% 4%,#b9adeb,transparent 40%),radial-gradient(ellipse at 6% 35%,#c9cafa,transparent 47%),linear-gradient(160deg,#929fda,#d6dcf5 65%,#dce6fa);min-height:100vh}button{font:inherit}a{color:var(--accent)}:focus-visible{outline:3px solid #47339e;outline-offset:4px}[hidden]{display:none!important}
 .shell{max-width:1180px;margin:auto;padding-inline:clamp(14px,4vw,34px)}.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:18px;color:#202749}.brand{font:600 clamp(19px,3vw,25px)/1 Fredoka,system-ui,sans-serif}.top a{font-size:12px;background:#f9f8ffe6;border:1px solid white;border-radius:20px;padding:7px 12px;text-decoration:none}.top a:hover{text-decoration:underline}
-.hero{position:relative;isolation:isolate;overflow:hidden;border:2px solid #fff9;border-radius:26px;background:#2f225b;color:#fff;box-shadow:0 14px 32px #3a2b6950;padding:clamp(22px,5vw,56px);min-height:282px;display:grid;align-content:center}.hero::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,#21163ff8 0%,#2a1c4beb 29%,#2b1b4d38 72%),var(--cover) center 42%/cover}.eyebrow{color:#ffe2a6;font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}.hero h1{font:600 clamp(37px,6.3vw,67px)/1.01 Fredoka,system-ui,sans-serif;margin:10px 0 12px;max-width:12ch;text-wrap:balance}.hero h1 span{color:#ffda9a}.hero p{max-width:39ch;margin:0;color:#f2eaff;font-size:14px}
+.hero{position:relative;isolation:isolate;overflow:hidden;border:2px solid #fff9;border-radius:26px;background:#2f225b;color:#fff;box-shadow:0 14px 32px #3a2b6950;padding:clamp(22px,5vw,56px);min-height:282px;display:grid;align-content:center}.hero::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,#21163ff8 0%,#2a1c4beb 29%,#2b1b4d38 72%),var(--cover) center 42%/cover}.eyebrow{color:#ffe2a6;font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}.hero h1{font:600 clamp(37px,6.3vw,67px)/1.01 Fredoka,system-ui,sans-serif;margin:10px 0 12px;max-width:12ch;text-wrap:balance}.hero-particles{display:none;position:absolute;inset:0;z-index:-1;pointer-events:none}
+.hero h1 span{color:#ffda9a}.hero p{max-width:39ch;margin:0;color:#f2eaff;font-size:14px}
 main{padding-block:23px 38px}.tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:0 0 20px}
 .tab{color:#454c72;border:0;background:transparent;border-radius:12px;cursor:pointer;min-height:44px;padding:7px 4px;font-weight:800}
 .tabs .tab{display:inline-flex;align-items:center;gap:10px;min-height:52px;min-width:0;padding:6px 12px 6px 7px;border:1px solid #ffffffad;border-radius:11px;background:#f5f3ffb5;color:#34345a;font:700 15px/1.2 "Plus Jakarta Sans",system-ui,sans-serif;text-align:left}
 .tabs .tab:hover{background:#fbfaff;border-color:white}
-.tabs .tab[aria-selected=true]{background:linear-gradient(145deg,#6650a0,#483879);color:white;border-color:#eee4ff;box-shadow:0 3px 8px #39256338}
+.tabs .tab[aria-selected=true]{background-color:#55458c;background-image:linear-gradient(145deg,#9568da42,#21113f4f);color:white;border-color:#eee4ff;box-shadow:0 3px 8px #39256338}
 .tab-art{flex:none;display:grid;place-items:center;width:30px;height:30px}
 .tab-art svg{width:21px;height:21px;color:inherit}.tab[aria-selected=true] .tab-art svg{color:#ffdc94}
 
@@ -91,36 +92,47 @@ dialog{width:min(88vw,420px);border:1px solid white;border-radius:23px;backgroun
 
 
 @media screen and (prefers-reduced-motion: no-preference){
+  .hero-particles{display:block}
+  .hero-particles span{position:absolute;left:var(--x);top:var(--y);width:var(--size,3px);aspect-ratio:1;border-radius:50%;background:currentColor;color:var(--spark,#ffda9a);box-shadow:0 0 7px currentColor;animation:hero-drift var(--duration) ease-in-out var(--delay) infinite}
+  @keyframes hero-drift{
+    0%,100%{opacity:.18;transform:translate(0,0)}
+    45%{opacity:.72;transform:translate(7px,-8px)}
+    75%{opacity:.32;transform:translate(-4px,-13px)}
+  }
+  .fill{transition:width 450ms cubic-bezier(.2, .75, .25, 1)}
+  @starting-style{.panel:not([hidden]) .fill{width:0!important}}
   .hero::before{transform:translateY(var(--hero-depth,0px)) scale(1.09)}
   .hero h1{animation:hero-sharpen 1050ms cubic-bezier(.2,.7,.25,1) both}
   .panel:not([hidden]){animation:panel-enter 420ms ease-out}
   .motion-enter{animation:card-enter 650ms cubic-bezier(.2,.75,.25,1) both;animation-delay:var(--entrance-delay,0ms)}
-  .tabs .tab,.unlock-card,.upgrade-card{transition:box-shadow 200ms ease,border-color 200ms ease,color 180ms ease}
-  .unlock-card .art img{transition:transform 200ms ease}
+  .unlock-card,.upgrade-card{transition:box-shadow 200ms ease,border-color 200ms ease,color 180ms ease}
+  .item{transition:transform 230ms ease,box-shadow 230ms ease}
+  .item .art img{transition:transform 230ms ease}
   .unlock-card:has(input:checked) .art img{transform:scale(1.07)}
   .unlock-card:has(input:checked) .unlock-check{animation:selection-spring 390ms ease-out}
   .unlock-submit{translate:var(--magnet-x,0px) var(--magnet-y,0px);transition:translate 200ms cubic-bezier(.2,.8,.3,1),box-shadow 200ms ease,scale 200ms cubic-bezier(.2,1.5,.4,1)}
   .unlock-submit:active,.tabs .tab:active{scale:.96 .92}
-  .tabs .tab{transition:scale 200ms cubic-bezier(.2,1.5,.4,1),box-shadow 200ms ease,border-color 200ms ease}
+  .tabs .tab{transition:background-color 220ms ease,scale 200ms cubic-bezier(.2,1.5,.4,1),box-shadow 200ms ease,border-color 200ms ease}
   .unlock-result:focus > h3,.unlock-result:focus > .metrics{animation:panel-enter 460ms ease-out}
   .unlock-result:focus .fill{transform-origin:left;animation:fill-progress 950ms cubic-bezier(.2,.7,.3,1) both}
   @media (hover:hover) and (pointer:fine){
+    .item:hover{transform:translateY(-3px);box-shadow:0 9px 23px #5b42913b}
+    .item:hover .art img,.unlock-card:has(input:checked):hover .art img{transform:scale(1.06)}
     .unlock-submit:hover,.tabs .tab:hover{box-shadow:0 5px 16px #6744b650}
     .unlock-card,.upgrade-card{
-      translate:0 var(--lift,0px);
-      transform:perspective(680px) rotateX(var(--tilt-x,0deg)) rotateY(var(--tilt-y,0deg));
-      transition:transform 180ms ease-out,translate 180ms ease-out,box-shadow 200ms ease,border-color 200ms ease;
+      transform:translateY(var(--lift,0px)) perspective(680px) rotateX(var(--tilt-x,0deg)) rotateY(var(--tilt-y,0deg));
+      transition:transform 180ms ease-out,box-shadow 200ms ease,border-color 200ms ease;
     }
     .unlock-card:hover,.upgrade-card:hover{--lift:-3px;box-shadow:0 9px 23px #5b42913b}
   }
   @keyframes hero-sharpen{from{opacity:.55;filter:blur(5px);translate:0 6px}to{opacity:1;filter:blur(0);translate:0 0}}
   @keyframes panel-enter{from{opacity:.55}to{opacity:1}}
-  @keyframes card-enter{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes card-enter{from{opacity:0;translate:0 12px}to{opacity:1;translate:0 0}}
   @keyframes selection-spring{0%{scale:.82}65%{scale:1.12}100%{scale:1}}
   @keyframes fill-progress{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 }
 
-.welcome-language{width:min(calc(100% - 32px),620px);max-height:calc(100dvh - 32px);overflow:auto;box-sizing:border-box;padding:24px 26px 24px 0;border:1px solid #e4dcffad;border-radius:22px;background:radial-gradient(ellipse at 14% 100%,#8d83c2,transparent 62%),linear-gradient(145deg,#565082,#31264e);color:#fff;box-shadow:0 24px 80px #181127aa;text-align:left}
+.welcome-language{width:min(calc(100% - 32px),620px);max-height:calc(100dvh - 32px);overflow:auto;box-sizing:border-box;padding:24px 26px 24px 0;border:1px solid #e4dcffad;border-radius:22px;background:radial-gradient(ellipse at 14% 100%,#8d83c2,transparent 62%),linear-gradient(145deg, #3e3766, #22193b);color:#fff;box-shadow:0 24px 80px #181127aa;text-align:left}
 .welcome-language[open]{display:grid;grid-template-columns:42% minmax(0,1fr);align-items:center}
 .welcome-language::backdrop{background:#1d1536b8;backdrop-filter:blur(7px)}
 .welcome-language .welcome-character{width:100%;height:260px;aspect-ratio:auto;object-fit:contain;object-position:center bottom;background:none;border-radius:0;filter:drop-shadow(0 9px 12px #22193a60)}
@@ -144,6 +156,14 @@ dialog{width:min(88vw,420px);border:1px solid white;border-radius:23px;backgroun
 <button type="button" data-language="en-US" lang="en-US" aria-pressed="false">ENG-US <small>English</small></button>
 </div></details><a href="https://qevzi.github.io/aniimo-calculator/">Calculadora de madeira ↗</a></div></div>
   <div class="hero">
+    <div class="hero-particles" aria-hidden="true">
+      <span style="--x:12%;--y:23%;--duration:18s;--delay:-6s"></span>
+      <span style="--x:33%;--y:76%;--duration:22s;--delay:-12s;--spark:#d9c3ff;--size:2px"></span>
+      <span style="--x:49%;--y:18%;--duration:20s;--delay:-9s;--spark:#d9c3ff"></span>
+      <span style="--x:66%;--y:68%;--duration:21s;--delay:-4s;--size:2px"></span>
+      <span style="--x:82%;--y:26%;--duration:19s;--delay:-14s"></span>
+      <span style="--x:93%;--y:78%;--duration:23s;--delay:-10s;--spark:#d9c3ff"></span>
+    </div>
     <div class="eyebrow">Aniimo · Reunião Noturna</div>
     <h1>Noite Mágica</h1>
     <p class="hero-goal">Meta de 70.000 de habitabilidade</p>

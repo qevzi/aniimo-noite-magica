@@ -369,12 +369,30 @@ const additionalFurnitureLoads = {
   "Lollipop": 164
 };
 const unlockPanel = document.querySelector('#panel-3');
+const unlockedNamesPt = {
+  "Ghostly Aroma": "Aroma Fantasmagórico",
+  "Grinning Pumpkin": "Abóbora Sorridente",
+  "Celestis Pumpkin": "Abóbora Celestis",
+  "Giggle Bowl": "Tigela de Risadinhas",
+  "Honey Tart": "Torta de Mel",
+  "Candy-Twister Octopus": "Polvo de Doces Torcidos",
+  "Twisty Candle": "Vela Espiral",
+  "Honey Drink": "Bebida de Mel",
+  "Cookie": "Biscoito",
+  "Cake": "Bolo",
+  "Macaron": "Macaron",
+  "Sweet Filling": "Recheio Doce",
+  "Mysterious Books": "Livros Misteriosos",
+  "Culich Candy": "Doce de Culich",
+  "Rainbow Candy": "Doce Arco-Íris",
+  "Lollipop": "Pirulito"
+};
 const unlockControls = new Map();
 let unlockResult;
 function renderUnlocked(language) {
   const en = language === 'en-US';
   const f = new Intl.NumberFormat(language).format;
-  const label = name => en ? name : swapCatalog.get(name)?.pt ?? name;
+  const label = name => en ? name : swapCatalog.get(name)?.pt ?? unlockedNamesPt[name];
   const heading = en ? 'My unlocked furniture' : 'Com o que já desbloqueei';
   document.querySelector('#tab-3').textContent = heading;
   unlockPanel.querySelector('h2').textContent = heading;

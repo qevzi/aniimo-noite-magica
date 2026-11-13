@@ -137,8 +137,9 @@ dialog{width:min(88vw,420px);border:1px solid white;border-radius:23px;backgroun
   width:min(calc(100% - 28px),700px);
   max-height:calc(100dvh - 24px);
   margin:auto;
-  padding:clamp(17px,4vw,30px);
-  overflow:auto;
+  --welcome-padding:clamp(17px,4vw,30px);
+  padding:var(--welcome-padding);
+  overflow:visible;
   border:1px solid #f7fbffb8;
   border-radius:23px;
   background:
@@ -183,20 +184,23 @@ dialog{width:min(88vw,420px);border:1px solid white;border-radius:23px;backgroun
 .welcome-options{display:grid;gap:9px}
 .welcome-layout {
   display:grid;
-  grid-template-columns:clamp(120px,25vw,166px) minmax(0,1fr);
+  grid-template-columns:clamp(170px,30vw,242px) minmax(0,1fr);
   align-items:center;
   gap:12px clamp(14px,3vw,24px);
 }
 .welcome-susuta {
   grid-row:1 / 3;
+  align-self:start;
+  margin-top:calc(-1 * var(--welcome-padding) - 34px);
   position:relative;
-  aspect-ratio:469 / 630;
+  aspect-ratio:469 / 390;
   overflow:hidden;
+  mask-image:linear-gradient(to bottom, #000 0 70%, transparent 100%);
   pointer-events:none;
 }
 .welcome-language .welcome-susuta img {
   position:absolute;
-  top:-28.1%;
+  top:-45.4%;
   left:-9.2%;
   display:block;
   width:109.2%;
@@ -208,14 +212,18 @@ dialog{width:min(88vw,420px);border:1px solid white;border-radius:23px;backgroun
 }
 @media(max-width:520px){
   .welcome-layout {
-    grid-template-columns:minmax(0,1fr) clamp(55px,20vw,87px);
+    grid-template-columns:minmax(0,1fr) clamp(82px,25vw,116px);
     gap:12px;
   }
-  .welcome-susuta{grid-column:2;grid-row:1}
+  .welcome-susuta{grid-column:2;grid-row:1;margin-top:calc(-1 * var(--welcome-padding) - 20px)}
   .welcome-language .welcome-copy{grid-column:1;grid-row:1;margin-bottom:0;gap:8px}
   .welcome-globe{width:34px;height:34px}
   .welcome-globe svg{width:20px;height:20px}
   .welcome-options{grid-column:1 / -1}
+}
+@media(max-height:380px){
+  .welcome-language{overflow:auto}
+  .welcome-susuta{margin-top:0}
 }
 
 .welcome-options button {

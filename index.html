@@ -39,10 +39,16 @@ dialog{width:min(88vw,420px);border:1px solid white;border-radius:23px;backgroun
 .tabs{grid-template-columns:repeat(4,minmax(0,1fr))}
 .unlocked-panel{background:#f5f3ff;border:1px solid white;border-radius:19px;padding:clamp(12px,3vw,22px);box-shadow:var(--shadow)}
 .unlocked-panel h2,.unlock-result h3{margin:0;font-family:Fredoka,system-ui,sans-serif}
-.unlock-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:8px;margin:16px 0}
-.unlock-card{display:grid;gap:5px;background:#fff;border:1px solid #e2dcf8;border-radius:11px;padding:8px}
-.unlock-card label{display:flex;align-items:center;gap:7px}.unlock-card img{width:36px;height:36px;object-fit:contain;background:#383454;border-radius:7px}
-.unlock-card small{color:var(--muted)}.unlock-card input[type=number]{width:7ch;font:inherit}.unlock-submit{background:#5644a5;color:white;padding:8px 15px}.unlock-submit:hover{background:#433383}
+.unlock-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(105px,1fr));gap:9px;margin:14px 0}
+.unlock-card label{position:relative;display:grid;justify-items:center;align-content:start;gap:7px;height:100%;padding:9px 6px;border:2px solid #e3def3;border-radius:13px;background:#fff;text-align:center;font-size:12px;font-weight:800;line-height:1.25;cursor:pointer;overflow-wrap:anywhere}
+.unlock-card img{width:60px;height:60px;object-fit:contain;border-radius:10px;background:radial-gradient(ellipse at bottom,#735681,#373454 75%)}
+.unlock-card input{position:absolute;top:6px;right:6px;width:16px;height:16px;margin:0;accent-color:#5644a5;opacity:0;cursor:pointer}
+.unlock-card label:hover{border-color:#9e8acc}
+.unlock-card label:has(input:checked){background:#eae2fb;border-color:#6c53b7}
+.unlock-card input:checked,.unlock-card label:hover input,.unlock-card input:focus-visible{opacity:1}
+.unlock-card label:focus-within{outline:2px solid #5141a0;outline-offset:2px}
+@media(max-width:420px){.unlock-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.unlock-card img{width:49px;height:49px}}
+.unlock-submit{background:#5644a5;color:white;padding:8px 15px}.unlock-submit:hover{background:#433383}
 .unlock-result:not(:empty){margin:14px 0;padding:12px;border-radius:12px;background:#e8e1fa}.unlock-result ul{columns:2;padding-left:20px}
 @media(max-width:560px){.tabs{grid-template-columns:repeat(2,minmax(0,1fr))}.unlock-result ul{columns:1}}
 </style>
@@ -90,7 +96,7 @@ dialog{width:min(88vw,420px);border:1px solid white;border-radius:23px;backgroun
 <h2></h2><p class="unlock-intro"></p>
 <form><div class="unlock-grid"></div><button class="tab unlock-submit" type="submit"></button></form>
 <div class="unlock-result" aria-live="polite"></div>
-<p><a class="unlock-source" href="https://aniimotools.dev/systems/homeland/home-season/"></a> · <a class="unlock-rewards" href="https://aniimo.kr/en/systems/mystic-night-gathering-2026-11-12"></a> · <a class="unlock-load-source" href="https://aniimo.gg/homeland/object/wonder-night-ghostly-aroma/"></a></p>
+<details class="credits unlock-credits"><summary></summary><p><a class="unlock-source" href="https://aniimotools.dev/systems/homeland/home-season/"></a> · <a class="unlock-rewards" href="https://aniimo.kr/en/systems/mystic-night-gathering-2026-11-12"></a> · <a class="unlock-load-source" href="https://aniimo.gg/homeland/object/wonder-night-ghostly-aroma/"></a></p></details>
 </section><details class="credits"><summary>Fontes das imagens e dos nomes</summary>
 <p>Ícones do jogo via <a href="https://aniimo.gg/">Aniimo.gg</a>. IDs e nomes em inglês conferidos no <a href="https://aniimoguide.com/homeland/furniture">Aniimo Guide</a> e no <a href="https://aniimotools.dev/systems/homeland/home-season/">Aniimo Tools</a>. Captura do evento via <a href="https://aniimo.kr/en/systems/magical-wonder-night-guide-2026-11-04">MOANIIMO</a>.</p>
 </details>
@@ -362,7 +368,6 @@ const additionalFurnitureLoads = {
   "Rainbow Candy": 133,
   "Lollipop": 164
 };
-const unlockSources = {"Sugar Puff":["160.000 de contribuição acumulada","160,000 cumulative contribution"],"Syrup Stove":["100.000 de contribuição acumulada","100,000 cumulative contribution"],"Light Glow":["60.000 de contribuição acumulada","60,000 cumulative contribution"],"Cotton Candy":["Caixa II da Reunião Noturna","Gathering giftbox II"],"Sparki Lights":["Caixa III da Reunião Noturna","Gathering giftbox III"],"Pumpkin Carriage":["Caixa IV da Reunião Noturna","Gathering giftbox IV"],"Grinning Pumpkin":["Missões da temporada","Season quests"],"Revelry":["220.000 pontos da coleção","220,000 Whimsy Points"],"Eerie Table":["140.000 pontos da coleção","140,000 Whimsy Points"],"Welcome":["60.000 pontos da coleção","60,000 Whimsy Points"],"Pumpkin Glow Screen":["15.000 pontos da coleção","15,000 Whimsy Points"],"Verdant Gold":["2.000 pontos da coleção","2,000 Whimsy Points"]};
 const unlockPanel = document.querySelector('#panel-3');
 const unlockControls = new Map();
 let unlockResult;
@@ -374,9 +379,10 @@ function renderUnlocked(language) {
   document.querySelector('#tab-3').textContent = heading;
   unlockPanel.querySelector('h2').textContent = heading;
   unlockPanel.querySelector('.unlock-intro').textContent = en
-    ? 'Select the blueprints you own to calculate a layout within the park limits.'
-    : 'Marque as plantas que você já tem para calcular uma montagem dentro dos limites do parque.';
+    ? 'Select your unlocked furniture.'
+    : 'Selecione os móveis que você já desbloqueou.';
   unlockPanel.querySelector('.unlock-submit').textContent = en ? 'Calculate layout' : 'Calcular montagem';
+  unlockPanel.querySelector('.unlock-credits summary').textContent = en ? 'Data sources' : 'Fontes dos dados';
   unlockPanel.querySelector('.unlock-source').textContent = en ? 'Blueprints and prices' : 'Plantas e preços';
   unlockPanel.querySelector('.unlock-rewards').textContent = en ? 'Gathering rewards' : 'Recompensas da Reunião Noturna';
   unlockPanel.querySelector('.unlock-load-source').textContent = en ? 'Furniture load · Aniimo.gg' : 'Carga dos móveis · Aniimo.gg';
@@ -384,18 +390,15 @@ function renderUnlocked(language) {
     if (!unlockControls.has(name)) {
       const card = document.createElement('div');
       card.className = 'unlock-card';
-      card.innerHTML = '<label><input type="checkbox"><img alt="" loading="lazy"><span></span></label><small></small>';
+      card.innerHTML = '<label><input type="checkbox"><img alt="" loading="lazy"><span></span></label>';
       card.querySelector('img').src = swapCatalog.get(name)?.image ?? 'https://cdn.beskor.net/aniimo/icons/ui_item_' + icon + '.webp?v=72';
       const check = card.querySelector('[type=checkbox]');
       const load = swapCatalog.get(name)?.load ?? additionalFurnitureLoads[name];
       unlockPanel.querySelector('.unlock-grid').append(card);
       unlockControls.set(name,{card,check,load,points,price,limit});
     }
-    const {card,load} = unlockControls.get(name);
+    const {card} = unlockControls.get(name);
     card.querySelector('span').textContent = label(name);
-    const source = unlockSources[name]?.[en ? 1 : 0] ?? ((en ? 'Event shop · ' : 'Loja do evento · ') + f(price*10) + (en ? ' Jellybeans for the blueprint' : ' jujubas pela planta'));
-    card.querySelector('small').textContent = source + ' · ' + f(price) + (en ? ' Jellybeans per piece' : ' jujubas por peça');
-    card.querySelector('small').textContent += ' · ' + f(load) + (en ? ' load per piece' : ' de carga por peça');
   }
   const result = unlockPanel.querySelector('.unlock-result');
   result.replaceChildren();
@@ -421,7 +424,7 @@ function renderUnlocked(language) {
   result.append(totals,list);
   if (missing > 0) {
     const next = document.createElement('p');
-    next.textContent = en ? 'Check the blueprint sources above to see what you can unlock next.' : 'Confira onde conseguir as plantas acima para escolher o próximo desbloqueio.';
+    next.textContent = en ? 'See the data sources for upcoming unlocks.' : 'Veja as fontes dos dados para consultar os próximos desbloqueios.';
     result.append(next);
   }
 }

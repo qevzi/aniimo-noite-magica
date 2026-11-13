@@ -99,29 +99,29 @@ dialog{width:min(88vw,420px);border:1px solid white;border-radius:23px;backgroun
     45%{opacity:.72;transform:translate(7px,-8px)}
     75%{opacity:.32;transform:translate(-4px,-13px)}
   }
-  .fill{transition:width 450ms cubic-bezier(.2, .75, .25, 1)}
+  .fill{transition:width 700ms cubic-bezier(.2, .75, .25, 1)}
   @starting-style{.panel:not([hidden]) .fill{width:0!important}}
   .hero::before{transform:translateY(var(--hero-depth,0px)) scale(1.09)}
-  .hero h1{animation:hero-sharpen 1050ms cubic-bezier(.2,.7,.25,1) both}
-  .panel:not([hidden]){animation:panel-enter 420ms ease-out}
-  .motion-enter{animation:card-enter 650ms cubic-bezier(.2,.75,.25,1) both;animation-delay:var(--entrance-delay,0ms)}
+  .hero h1{animation:hero-sharpen 1550ms cubic-bezier(.2,.7,.25,1) both}
+  .panel:not([hidden]){animation:panel-enter 680ms ease-out}
+  .motion-enter{animation:card-enter 1000ms cubic-bezier(.2,.75,.25,1) both;animation-delay:var(--entrance-delay,0ms)}
   .unlock-card,.upgrade-card{transition:box-shadow 200ms ease,border-color 200ms ease,color 180ms ease}
-  .item{transition:transform 230ms ease,box-shadow 230ms ease}
-  .item .art img{transition:transform 230ms ease}
+  .item{transition:transform 360ms ease,box-shadow 360ms ease}
+  .item .art img{transition:transform 360ms ease}
   .unlock-card:has(input:checked) .art img{transform:scale(1.07)}
-  .unlock-card:has(input:checked) .unlock-check{animation:selection-spring 390ms ease-out}
-  .unlock-submit{translate:var(--magnet-x,0px) var(--magnet-y,0px);transition:translate 200ms cubic-bezier(.2,.8,.3,1),box-shadow 200ms ease,scale 200ms cubic-bezier(.2,1.5,.4,1)}
+  .unlock-card:has(input:checked) .unlock-check{animation:selection-spring 530ms ease-out}
+  .unlock-submit{translate:var(--magnet-x,0px) var(--magnet-y,0px);transition:translate 300ms cubic-bezier(.2,.8,.3,1),box-shadow 200ms ease,scale 200ms cubic-bezier(.2,1.5,.4,1)}
   .unlock-submit:active,.tabs .tab:active{scale:.96 .92}
-  .tabs .tab{transition:background-color 220ms ease,scale 200ms cubic-bezier(.2,1.5,.4,1),box-shadow 200ms ease,border-color 200ms ease}
-  .unlock-result:focus > h3,.unlock-result:focus > .metrics{animation:panel-enter 460ms ease-out}
-  .unlock-result:focus .fill{transform-origin:left;animation:fill-progress 950ms cubic-bezier(.2,.7,.3,1) both}
+  .tabs .tab{transition:background-color 360ms ease,scale 200ms cubic-bezier(.2,1.5,.4,1),box-shadow 200ms ease,border-color 200ms ease}
+  .unlock-result:focus > h3,.unlock-result:focus > .metrics{animation:panel-enter 720ms ease-out}
+  .unlock-result:focus .fill{transform-origin:left;animation:fill-progress 1350ms cubic-bezier(.2,.7,.3,1) both}
   @media (hover:hover) and (pointer:fine){
     .item:hover{transform:translateY(-3px);box-shadow:0 9px 23px #5b42913b}
     .item:hover .art img,.unlock-card:has(input:checked):hover .art img{transform:scale(1.06)}
     .unlock-submit:hover,.tabs .tab:hover{box-shadow:0 5px 16px #6744b650}
     .unlock-card,.upgrade-card{
       transform:translateY(var(--lift,0px)) perspective(680px) rotateX(var(--tilt-x,0deg)) rotateY(var(--tilt-y,0deg));
-      transition:transform 180ms ease-out,box-shadow 200ms ease,border-color 200ms ease;
+      transition:transform 280ms ease-out,box-shadow 200ms ease,border-color 200ms ease;
     }
     .unlock-card:hover,.upgrade-card:hover{--lift:-3px;box-shadow:0 9px 23px #5b42913b}
   }
@@ -144,7 +144,7 @@ dialog{width:min(88vw,420px);border:1px solid white;border-radius:23px;backgroun
 .welcome-options button:focus-visible{outline:3px solid white;outline-offset:4px}
 .welcome-options small{font-size:11px;text-align:right}
 @media(max-width:520px){.welcome-language{padding:14px 18px 22px}.welcome-language[open]{grid-template-columns:1fr;text-align:center}.welcome-language .welcome-character{height:min(31dvh,164px);margin:0 auto 10px}.welcome-language h2{margin-bottom:13px}}
-@media(prefers-reduced-motion:no-preference){.welcome-language[open]{animation:welcome-enter 570ms cubic-bezier(.2,.75,.25,1) both}@keyframes welcome-enter{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:none}}}
+@media(prefers-reduced-motion:no-preference){.welcome-language[open]{animation:welcome-enter 850ms cubic-bezier(.2,.75,.25,1) both}@keyframes welcome-enter{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:none}}}
 </style>
 </head>
 <body>

@@ -90,7 +90,7 @@ dialog{width:min(88vw,420px);border:1px solid white;border-radius:23px;backgroun
 <h2></h2><p class="unlock-intro"></p>
 <form><div class="unlock-grid"></div><button class="tab unlock-submit" type="submit"></button></form>
 <div class="unlock-result" aria-live="polite"></div>
-<p><a class="unlock-source" href="https://aniimotools.dev/systems/homeland/home-season/"></a> · <a class="unlock-rewards" href="https://aniimo.kr/en/systems/mystic-night-gathering-2026-11-12"></a></p>
+<p><a class="unlock-source" href="https://aniimotools.dev/systems/homeland/home-season/"></a> · <a class="unlock-rewards" href="https://aniimo.kr/en/systems/mystic-night-gathering-2026-11-12"></a> · <a class="unlock-load-source" href="https://aniimo.gg/homeland/object/wonder-night-ghostly-aroma/"></a></p>
 </section><details class="credits"><summary>Fontes das imagens e dos nomes</summary>
 <p>Ícones do jogo via <a href="https://aniimo.gg/">Aniimo.gg</a>. IDs e nomes em inglês conferidos no <a href="https://aniimoguide.com/homeland/furniture">Aniimo Guide</a> e no <a href="https://aniimotools.dev/systems/homeland/home-season/">Aniimo Tools</a>. Captura do evento via <a href="https://aniimo.kr/en/systems/magical-wonder-night-guide-2026-11-04">MOANIIMO</a>.</p>
 </details>
@@ -343,6 +343,25 @@ function solveUnlocked(items) {
   return best;
 }
 const unlockData = [["Ghostly Aroma",549,46,10,40600113],["Menu",366,31,10,40600111],["Grinning Pumpkin",366,31,10,40600107],["Celestis Pumpkin",366,31,10,40600108],["Giggle Bowl",366,31,10,40600112],["Honey Tart",366,31,10,40600114],["Candy-Twister Octopus",366,31,10,40600119],["Twisty Candle",219,18,10,40600120],["Honey Drink",183,15,20,40600110],["Cookie",183,15,10,40600115],["Cake",183,15,10,40600116],["Macaron",183,15,10,40600117],["Sweet Filling",183,15,10,40600118],["Mysterious Books",183,15,10,40600121],["Culich Candy",183,15,10,40600122],["Rainbow Candy",183,15,10,40600123],["Lollipop",183,15,10,40600124],["Pumpkin Glow Screen",657,55,10],["Verdant Gold",732,61,10],["Welcome",1098,92,5],["Cotton Candy",1317,110,10],["Pumpkin Carriage",1644,137,5],["Eerie Table",1644,137,5],["Light Glow",1644,137,5],["Syrup Stove",1974,165,5],["Sparki Lights",1974,165,5],["Sugar Puff",1974,165,10],["Revelry",1974,165,5]];
+// Per-piece load from the Aniimo.gg Homeland object records.
+const additionalFurnitureLoads = {
+  "Grinning Pumpkin": 96,
+  "Celestis Pumpkin": 95,
+  "Honey Drink": 371,
+  "Giggle Bowl": 648,
+  "Ghostly Aroma": 2235,
+  "Honey Tart": 3173,
+  "Cookie": 244,
+  "Cake": 92,
+  "Macaron": 256,
+  "Sweet Filling": 171,
+  "Candy-Twister Octopus": 457,
+  "Twisty Candle": 67,
+  "Mysterious Books": 36,
+  "Culich Candy": 174,
+  "Rainbow Candy": 133,
+  "Lollipop": 164
+};
 const unlockSources = {"Sugar Puff":["160.000 de contribuição acumulada","160,000 cumulative contribution"],"Syrup Stove":["100.000 de contribuição acumulada","100,000 cumulative contribution"],"Light Glow":["60.000 de contribuição acumulada","60,000 cumulative contribution"],"Cotton Candy":["Caixa II da Reunião Noturna","Gathering giftbox II"],"Sparki Lights":["Caixa III da Reunião Noturna","Gathering giftbox III"],"Pumpkin Carriage":["Caixa IV da Reunião Noturna","Gathering giftbox IV"],"Grinning Pumpkin":["Missões da temporada","Season quests"],"Revelry":["220.000 pontos da coleção","220,000 Whimsy Points"],"Eerie Table":["140.000 pontos da coleção","140,000 Whimsy Points"],"Welcome":["60.000 pontos da coleção","60,000 Whimsy Points"],"Pumpkin Glow Screen":["15.000 pontos da coleção","15,000 Whimsy Points"],"Verdant Gold":["2.000 pontos da coleção","2,000 Whimsy Points"]};
 const unlockPanel = document.querySelector('#panel-3');
 const unlockControls = new Map();
@@ -355,25 +374,20 @@ function renderUnlocked(language) {
   document.querySelector('#tab-3').textContent = heading;
   unlockPanel.querySelector('h2').textContent = heading;
   unlockPanel.querySelector('.unlock-intro').textContent = en
-    ? 'Select the blueprints you own. If the load is blank, enter the value shown next to the bag icon in the game.'
-    : 'Marque as plantas que você já tem. Se a carga estiver em branco, informe o valor que aparece ao lado da bolsa no jogo.';
+    ? 'Select the blueprints you own to calculate a layout within the park limits.'
+    : 'Marque as plantas que você já tem para calcular uma montagem dentro dos limites do parque.';
   unlockPanel.querySelector('.unlock-submit').textContent = en ? 'Calculate layout' : 'Calcular montagem';
   unlockPanel.querySelector('.unlock-source').textContent = en ? 'Blueprints and prices' : 'Plantas e preços';
   unlockPanel.querySelector('.unlock-rewards').textContent = en ? 'Gathering rewards' : 'Recompensas da Reunião Noturna';
+  unlockPanel.querySelector('.unlock-load-source').textContent = en ? 'Furniture load · Aniimo.gg' : 'Carga dos móveis · Aniimo.gg';
   for (const [name, points, price, limit, icon] of unlockData.slice().sort((a,b)=>a[2]-b[2])) {
     if (!unlockControls.has(name)) {
       const card = document.createElement('div');
       card.className = 'unlock-card';
-      card.innerHTML = '<label><input type="checkbox"><img alt="" loading="lazy"><span></span></label><small></small><label hidden><span></span><input type="number" min="0" max="80000" step="1" disabled></label>';
+      card.innerHTML = '<label><input type="checkbox"><img alt="" loading="lazy"><span></span></label><small></small>';
       card.querySelector('img').src = swapCatalog.get(name)?.image ?? 'https://cdn.beskor.net/aniimo/icons/ui_item_' + icon + '.webp?v=72';
       const check = card.querySelector('[type=checkbox]');
-      const load = card.querySelector('[type=number]');
-      check.addEventListener('change', () => {
-        const needsLoad = check.checked && !swapCatalog.has(name);
-        load.parentElement.hidden = !needsLoad;
-        load.disabled = !needsLoad;
-        load.required = needsLoad;
-      });
+      const load = swapCatalog.get(name)?.load ?? additionalFurnitureLoads[name];
       unlockPanel.querySelector('.unlock-grid').append(card);
       unlockControls.set(name,{card,check,load,points,price,limit});
     }
@@ -381,7 +395,7 @@ function renderUnlocked(language) {
     card.querySelector('span').textContent = label(name);
     const source = unlockSources[name]?.[en ? 1 : 0] ?? ((en ? 'Event shop · ' : 'Loja do evento · ') + f(price*10) + (en ? ' Jellybeans for the blueprint' : ' jujubas pela planta'));
     card.querySelector('small').textContent = source + ' · ' + f(price) + (en ? ' Jellybeans per piece' : ' jujubas por peça');
-    load.previousElementSibling.textContent = en ? 'Load per piece' : 'Carga por peça';
+    card.querySelector('small').textContent += ' · ' + f(load) + (en ? ' load per piece' : ' de carga por peça');
   }
   const result = unlockPanel.querySelector('.unlock-result');
   result.replaceChildren();
@@ -419,7 +433,7 @@ unlockForm.addEventListener('input', () => {
 unlockForm.addEventListener('submit', event => {
   event.preventDefault();
   const items = [...unlockControls].flatMap(([name,item]) => item.check.checked
-    ? [{name,points:item.points,price:item.price,limit:item.limit,load:swapCatalog.get(name)?.load ?? item.load.valueAsNumber}] : []);
+    ? [{name,points:item.points,price:item.price,limit:item.limit,load:item.load}] : []);
   if (items.some(item => !Number.isInteger(item.load) || item.load < 0 || item.load > limits.load)) return;
   unlockResult = solveUnlocked(items);
   renderUnlocked(document.documentElement.lang);

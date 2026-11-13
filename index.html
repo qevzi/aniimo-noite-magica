@@ -47,8 +47,9 @@ dialog{width:min(88vw,420px);border:1px solid white;border-radius:23px;backgroun
 .unlock-card:hover{border-color:#9e8acc}
 .unlock-card:has(input:checked){background:linear-gradient(145deg,#f3edff,#e6ddfa);border-color:#6c53b7}
 .unlock-card:focus-within{outline:2px solid #5141a0;outline-offset:2px}
-.unlock-check{position:absolute;top:10px;right:10px;display:grid;place-items:center;width:20px;height:20px;border:1px solid #a095c4;border-radius:50%;color:transparent}
-.unlock-card:has(input:checked) .unlock-check{background:#5644a5;border-color:#5644a5;color:white}
+.unlock-check{position:absolute;top:9px;right:9px;display:grid;place-items:center;width:22px;height:22px;border:1px solid #a095c4;border-radius:50%;background:#fbf9ff}
+.unlock-card:has(input:checked) .unlock-check{background:#5644a5;border-color:#5644a5;box-shadow:0 2px 5px #5644a540}
+.unlock-card:has(input:checked) .unlock-check::before{content:"";width:10px;height:6px;border-left:2px solid white;border-bottom:2px solid white;transform:translateY(-1px) rotate(-45deg)}
 .unlock-submit{background:#5644a5;color:white;padding:8px 15px}.unlock-submit:hover{background:#433383}
 .unlock-result:not(:empty){margin:22px 0}
 .unlock-result h3{font-size:24px;margin-bottom:12px}
@@ -416,7 +417,7 @@ function renderUnlocked(language) {
     if (!unlockControls.has(name)) {
       const card = document.createElement('label');
       card.className = 'item unlock-card';
-      card.innerHTML = '<input type="checkbox"><span class="art"><img alt="" loading="lazy"></span><span class="name"><strong></strong></span><span class="unlock-check" aria-hidden="true">✓</span>';
+      card.innerHTML = '<input type="checkbox"><span class="art"><img alt="" loading="lazy"></span><span class="name"><strong></strong></span><span class="unlock-check" aria-hidden="true"></span>';
       card.querySelector('img').src = swapCatalog.get(name)?.image ?? 'https://cdn.beskor.net/aniimo/icons/ui_item_' + icon + '.webp?v=72';
       const check = card.querySelector('[type=checkbox]');
       const load = swapCatalog.get(name)?.load ?? additionalFurnitureLoads[name];

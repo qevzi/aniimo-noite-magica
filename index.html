@@ -60,6 +60,11 @@ dialog{width:min(88vw,420px);border:1px solid white;border-radius:23px;backgroun
 .unlock-quantity{display:inline-block;margin-top:6px;border-radius:8px;background:#e3dcfb;color:#46308c;padding:3px 9px;font-weight:800}
 @media(max-width:640px){.unlock-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:560px){.tabs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.unlock-upgrades{margin-bottom:24px}
+.upgrade-title{display:flex;align-items:center;gap:8px}
+.upgrade-title img{width:44px;height:44px;object-fit:contain;background:#383454;border-radius:9px}
+.upgrade-gain{color:#205e49;font-weight:800;margin:8px 0 2px}
+.upgrade-change{font-size:12px;margin:7px 0 0}
 </style>
 </head>
 <body>
@@ -398,6 +403,74 @@ const unlockedNamesPt = {
 };
 const unlockControls = new Map();
 let unlockResult;
+let unlockSuggestions = [];
+
+function suggestUnlocks(items, current) {
+  if (!items.length || current.points >= limits.points) return [];
+  const previous = new Map(current.pieces.map(item => [item.name, item.quantity]));
+  return [...unlockControls].flatMap(([name, item]) => {
+    if (item.check.checked) return [];
+    const plan = solveUnlocked([...items, {name, points:item.points, price:item.price, limit:item.limit, load:item.load}]);
+    if (plan.points <= current.points) return [];
+    const next = new Map(plan.pieces.map(piece => [piece.name, piece.quantity]));
+    const removed = [...previous].flatMap(([key, count]) => count > (next.get(key) ?? 0) ? [[key, count - (next.get(key) ?? 0)]] : []);
+    const added = [...next].flatMap(([key, count]) => count > (previous.get(key) ?? 0) ? [[key, count - (previous.get(key) ?? 0)]] : []);
+    return [{name, plan, removed, added}];
+  }).sort((a,b) => Math.min(limits.points,b.plan.points) - Math.min(limits.points,a.plan.points) ||
+    a.plan.count - b.plan.count || a.plan.load - b.plan.load).slice(0,3);
+}
+
+const upgradeSources = {
+  'Sugar Puff':['160.000 de contribuição acumulada','160,000 cumulative contribution'],
+  'Syrup Stove':['100.000 de contribuição acumulada','100,000 cumulative contribution'],
+  'Light Glow':['60.000 de contribuição acumulada','60,000 cumulative contribution'],
+  'Cotton Candy':['Caixa II da Reunião Noturna','Nighttime Gathering giftbox II'],
+  'Sparki Lights':['Caixa III da Reunião Noturna','Nighttime Gathering giftbox III'],
+  'Pumpkin Carriage':['Caixa IV da Reunião Noturna','Nighttime Gathering giftbox IV'],
+  'Revelry':['220.000 pontos da coleção','220,000 Whimsy Points'],
+  'Eerie Table':['140.000 pontos da coleção','140,000 Whimsy Points'],
+  'Welcome':['60.000 pontos da coleção','60,000 Whimsy Points'],
+  'Pumpkin Glow Screen':['15.000 pontos da coleção','15,000 Whimsy Points'],
+  'Verdant Gold':['2.000 pontos da coleção','2,000 Whimsy Points'],
+  'Grinning Pumpkin':['Missões da temporada','Season quests']
+};
+
+function renderUnlockSuggestions(en, f, label, points) {
+  const section = document.createElement('section');
+  section.className = 'unlock-upgrades';
+  const title = document.createElement('h4');
+  title.className = 'catalog-title';
+  title.textContent = en ? 'What to unlock next' : 'O que desbloquear agora';
+  section.append(title);
+  if (!unlockSuggestions.length) {
+    const note = document.createElement('p');
+    note.textContent = en ? 'Unlocking a single furniture type cannot improve this layout.' : 'Desbloquear um único tipo de móvel não melhora esta montagem.';
+    section.append(note);
+    return section;
+  }
+  const grid = document.createElement('div');
+  grid.className = 'items';
+  for (const {name, plan, removed, added} of unlockSuggestions) {
+    const card = document.createElement('article');
+    card.className = 'metric upgrade-card';
+    const source = upgradeSources[name]?.[en ? 1 : 0] ?? (en ? 'Event shop' : 'Loja do evento');
+    const changes = pieces => pieces.map(([key, count]) => f(count) + '× ' + label(key)).join(' · ');
+    card.innerHTML = '<div class="upgrade-title"><img alt=""><div><b></b><small></small></div></div><p class="upgrade-gain"></p><small class="upgrade-limits"></small><p class="upgrade-change"></p><p class="upgrade-change"></p>';
+    card.querySelector('img').src = unlockControls.get(name).card.querySelector('img').src;
+    card.querySelector('b').textContent = label(name);
+    card.querySelector('.upgrade-title small').textContent = source;
+    card.querySelector('.upgrade-gain').textContent = '+' + f(plan.points - points) + (en ? ' points' : ' pontos') + ' → ' + f(plan.points);
+    card.querySelector('.upgrade-limits').textContent = plan.count + '/100 ' + (en ? 'decorations' : 'decorações') + ' · ' + f(plan.load) + '/' + f(limits.load) + (en ? ' load' : ' de carga');
+    const [take, put] = card.querySelectorAll('.upgrade-change');
+    if (removed.length) take.textContent = (en ? 'Remove ' : 'Retire ') + changes(removed);
+    else take.remove();
+    put.textContent = (en ? 'Add ' : 'Coloque ') + changes(added);
+    grid.append(card);
+  }
+  section.append(grid);
+  return section;
+}
+
 function renderUnlocked(language) {
   const en = language === 'en-US';
   const f = new Intl.NumberFormat(language).format;
@@ -476,7 +549,9 @@ function renderUnlocked(language) {
     row.querySelector('.unlock-quantity').setAttribute('aria-label', f(item.quantity) + (en ? ' to place' : ' para colocar'));
     list.append(row);
   }
-  result.append(metrics, furnitureHeading, list);
+  result.append(metrics);
+  if (missing) result.append(renderUnlockSuggestions(en, f, label, points));
+  result.append(furnitureHeading, list);
 }
 const unlockForm = unlockPanel.querySelector('form');
 unlockForm.addEventListener('input', () => {
@@ -489,6 +564,7 @@ unlockForm.addEventListener('submit', event => {
     ? [{name,points:item.points,price:item.price,limit:item.limit,load:item.load}] : []);
   if (items.some(item => !Number.isInteger(item.load) || item.load < 0 || item.load > limits.load)) return;
   unlockResult = solveUnlocked(items);
+  unlockSuggestions = suggestUnlocks(items, unlockResult);
   renderUnlocked(document.documentElement.lang);
   unlockPanel.querySelector('.unlock-result').focus();
 });

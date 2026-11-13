@@ -331,6 +331,18 @@ html:not([lang="en-US"]) [data-mix="en"],html[lang="en-US"] :is([data-mix="pt"],
   .mixed-panel .metric strong em{display:inline}
 }
 @media print{.mixed-picker,.mixed-status,.mixed-swap{display:none}}
+.mixed-selection-area{position:relative;min-width:0}
+.mixed-selection-area .mixed-selected summary{padding-right:38px;min-height:24px}
+.mixed-picker .mixed-selection-search{position:absolute;top:12px;right:10px;display:grid;place-items:center;width:30px;height:28px;min-height:0;padding:0;border-radius:999px;background:#fff}
+.mixed-picker .mixed-selection-search:hover{background:#e6dcfa}
+.mixed-selection-dialog{width:min(90vw,740px);box-sizing:border-box;max-height:85dvh;overflow:auto;border-radius:20px;background:linear-gradient(145deg,#fbfbff,#edf0fc)}
+.mixed-selection-dialog h2{margin:0 0 12px}
+.mixed-selection-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,165px),1fr));gap:8px;text-align:left}
+.mixed-selection-dialog .mixed-selection-grid button{display:grid;grid-template-columns:36px minmax(0,1fr) 12px;align-items:center;gap:6px;padding:6px;border:1px solid #d5c6ef;border-radius:11px;background:#f0eafa;color:#423181;text-align:left;font:700 12px inherit;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;overflow-wrap:anywhere}
+.mixed-selection-dialog .mixed-selection-grid button:hover{background:#e6dcfa}
+.mixed-selection-dialog .mixed-selection-grid img{width:36px;height:36px;border-radius:7px}
+.mixed-selection-remove{font-size:17px}
+.mixed-selection-dialog form{margin-top:12px;text-align:right}
 
 .mixed-picker {
   margin:0 0 14px;
@@ -1330,11 +1342,12 @@ function renderMixed({pickerOnly = false} = {}) {
     '<div class="mixed-carousel">'+pending.map(({item,i})=>choice(item,i)).join('')+'</div>'+
     '<button type="button" data-carousel="1" aria-label="'+tr('Próximo','Next')+'">›</button></div>' :
     '<p class="mixed-carousel-empty">'+tr('Nenhum móvel restante nesta categoria.','No remaining furniture in this category.')+'</p>')+
+    '<div class="mixed-selection-area"><button class="mixed-selection-search" type="button" aria-haspopup="dialog" aria-label="'+tr('Ver todos os selecionados','View all selected items')+'" title="'+tr('Ver todos os selecionados','View all selected items')+'"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="5.5"/><path d="m15 15 5 5"/></svg></button>'+
     '<details class="mixed-selected" '+(wasOpen?'open':'')+'><summary>'+tr('Selecionados','Selected')+' <b>'+selected.length+'</b></summary>'+
     (selected.length ? '<div class="mixed-carousel-row mixed-selected-row"><button type="button" data-carousel="-1" aria-label="'+tr('Selecionados anteriores','Previous selected items')+'">‹</button>'+
     '<div class="mixed-carousel">'+selected.map(({item,i})=>choice(item,i)).join('')+'</div>'+
     '<button type="button" data-carousel="1" aria-label="'+tr('Próximos selecionados','Next selected items')+'">›</button></div>' :
-    '<p class="mixed-carousel-empty">'+tr('Nenhum móvel selecionado.','No furniture selected.')+'</p>')+'</details>';
+    '<p class="mixed-carousel-empty">'+tr('Nenhum móvel selecionado.','No furniture selected.')+'</p>')+'</details></div>';
   const carousel = list.querySelector('.mixed-carousel-row:not(.mixed-selected-row) .mixed-carousel');
   if (carousel) carousel.scrollLeft = left;
   const selectedRail = list.querySelector('.mixed-selected .mixed-carousel');
@@ -1359,6 +1372,56 @@ function renderMixed({pickerOnly = false} = {}) {
       '<div class="mixed-piece-footer"><small>'+cost+'</small><button type="button" class="swap-trigger" data-swap="'+i+'" aria-label="'+tr('Trocar ','Swap ')+safe(nameOf(item))+'">'+tr('↻ Trocar','↻ Swap')+'</button></div></article>';
   }).join('');
 }
+
+const selectionDialog = document.createElement('dialog');
+selectionDialog.className = 'mixed-selection-dialog';
+selectionDialog.setAttribute('aria-labelledby','mixed-selection-title');
+document.body.append(selectionDialog);
+
+function renderSelectionDialog() {
+  const en = document.documentElement.lang === 'en-US';
+  const selected = [...mixedCatalog.values()].filter(item => mixedAvailable.has(item.name) && fitsMixedLevel(item));
+  const heading = document.createElement('h2');
+  heading.id = 'mixed-selection-title';
+  heading.textContent = (en ? 'Selected furniture' : 'Móveis selecionados')+' · '+selected.length;
+  const grid = document.createElement('div');
+  grid.className = 'mixed-selection-grid';
+  for (const item of selected) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    const name = en ? item.name : item.pt;
+    button.setAttribute('aria-label',(en?'Deselect ':'Desmarcar ')+name);
+    const img = document.createElement('img');
+    img.src = item.image;
+    img.alt = '';
+    const title = document.createElement('span');
+    title.textContent = name;
+    const remove = document.createElement('span');
+    remove.className = 'mixed-selection-remove';
+    remove.setAttribute('aria-hidden','true');
+    remove.textContent = '×';
+    button.append(img,title,remove);
+    button.addEventListener('click', () => {
+      const next = button.nextElementSibling ?? button.previousElementSibling;
+      mixedAvailable.delete(item.name);
+      button.remove();
+      heading.textContent = (en ? 'Selected furniture' : 'Móveis selecionados')+' · '+grid.childElementCount;
+      renderMixed({pickerOnly:true});
+      (next ?? selectionDialog.querySelector('form button')).focus();
+    });
+    grid.append(button);
+  }
+  const form = document.createElement('form');
+  form.method = 'dialog';
+  const close = document.createElement('button');
+  close.textContent = en ? 'Done' : 'Concluir';
+  form.append(close);
+  selectionDialog.replaceChildren(heading,grid,form);
+}
+
+selectionDialog.addEventListener('close', () => {
+  mixedPanel.querySelector('.mixed-selection-search')?.focus();
+});
 
 mixedPanel.addEventListener('change', event => {
   if (event.target.matches('[data-owned]')) {
@@ -1387,6 +1450,11 @@ mixedPanel.addEventListener('change', event => {
 mixedPanel.addEventListener('click', event => {
   const button = event.target.closest('button');
   if (!button) return;
+  if (button.matches('.mixed-selection-search')) {
+    renderSelectionDialog();
+    selectionDialog.showModal();
+    return;
+  }
   if (button.matches('[data-carousel]')) {
     const rail = button.parentElement.querySelector('.mixed-carousel');
     const direction = Number(button.dataset.carousel);

@@ -64,7 +64,18 @@ dialog{width:min(88vw,420px);border:1px solid white;border-radius:23px;backgroun
 .upgrade-title{display:flex;align-items:center;gap:8px}
 .upgrade-title img{width:44px;height:44px;object-fit:contain;background:#383454;border-radius:9px}
 .upgrade-gain{color:#205e49;font-weight:800;margin:8px 0 2px}
-.upgrade-change{font-size:12px;margin:7px 0 0}
+.upgrade-steps{display:grid;gap:7px;margin-top:9px}
+.upgrade-step{border-radius:10px;padding:8px;font-size:12px}
+.upgrade-step.remove{background:#f8e9ef;color:#792947}
+.upgrade-step.place{background:#e2f3e9;color:#205e49}
+.upgrade-step ul{display:grid;grid-template-columns:repeat(auto-fill,minmax(65px,1fr));gap:6px;margin:5px 0 0;padding:0;list-style:none}
+.upgrade-step li{min-width:0;text-align:center;font-size:10px;line-height:1.2;overflow-wrap:anywhere}
+.upgrade-icon{position:relative;display:block;width:48px;margin:0 auto 4px}
+.upgrade-icon img{display:block;width:48px;height:48px;object-fit:contain;background:#383454;border-radius:8px}
+.upgrade-icon b{position:absolute;right:0;bottom:0;padding:2px 4px;border-radius:5px;background:#27213f;color:white;font-size:11px}
+.upgrade-details{margin-top:10px;font-size:11px}
+.upgrade-details summary{cursor:pointer;color:var(--accent);font-weight:700}
+.upgrade-details small{margin-top:3px}
 </style>
 </head>
 <body>
@@ -454,17 +465,38 @@ function renderUnlockSuggestions(en, f, label, points) {
     const card = document.createElement('article');
     card.className = 'metric upgrade-card';
     const source = upgradeSources[name]?.[en ? 1 : 0] ?? (en ? 'Event shop' : 'Loja do evento');
-    const changes = pieces => pieces.map(([key, count]) => f(count) + '× ' + label(key)).join(' · ');
-    card.innerHTML = '<div class="upgrade-title"><img alt=""><div><b></b><small></small></div></div><p class="upgrade-gain"></p><small class="upgrade-limits"></small><p class="upgrade-change"></p><p class="upgrade-change"></p>';
-    card.querySelector('img').src = unlockControls.get(name).card.querySelector('img').src;
+    card.innerHTML = '<div class="upgrade-title"><img alt=""><b></b></div><p class="upgrade-gain"></p><div class="upgrade-steps"></div><details class="upgrade-details"><summary></summary><small></small><small></small></details>';
+    const thumbnail = key => unlockControls.get(key).card.querySelector('img').src;
+    card.querySelector('.upgrade-title img').src = thumbnail(name);
     card.querySelector('b').textContent = label(name);
-    card.querySelector('.upgrade-title small').textContent = source;
     card.querySelector('.upgrade-gain').textContent = '+' + f(plan.points - points) + (en ? ' points' : ' pontos') + ' → ' + f(plan.points);
-    card.querySelector('.upgrade-limits').textContent = plan.count + '/100 ' + (en ? 'decorations' : 'decorações') + ' · ' + f(plan.load) + '/' + f(limits.load) + (en ? ' load' : ' de carga');
-    const [take, put] = card.querySelectorAll('.upgrade-change');
-    if (removed.length) take.textContent = (en ? 'Remove ' : 'Retire ') + changes(removed);
-    else take.remove();
-    put.textContent = (en ? 'Add ' : 'Coloque ') + changes(added);
+    const details = card.querySelector('.upgrade-details');
+    details.querySelector('summary').textContent = en ? 'Unlock & limits' : 'Desbloqueio e limites';
+    const [where, totals] = details.querySelectorAll('small');
+    where.textContent = source;
+    totals.textContent = plan.count + '/100 ' + (en ? 'decorations' : 'decorações') + ' · ' + f(plan.load) + '/' + f(limits.load) + (en ? ' load' : ' de carga');
+
+    for (const [pieces, heading, action] of [
+      [removed, en ? 'Remove' : 'Retire', 'remove'],
+      [added, en ? 'Place' : 'Coloque', 'place']
+    ]) {
+      if (!pieces.length) continue;
+      const step = document.createElement('div');
+      step.className = 'upgrade-step ' + action;
+      const caption = document.createElement('b');
+      caption.textContent = heading;
+      const tiles = document.createElement('ul');
+      for (const [key, count] of pieces) {
+        const tile = document.createElement('li');
+        tile.innerHTML = '<span class="upgrade-icon"><img alt=""><b></b></span><span></span>';
+        tile.querySelector('img').src = thumbnail(key);
+        tile.querySelector('b').textContent = f(count) + '×';
+        tile.lastElementChild.textContent = label(key);
+        tiles.append(tile);
+      }
+      step.append(caption, tiles);
+      card.querySelector('.upgrade-steps').append(step);
+    }
     grid.append(card);
   }
   section.append(grid);

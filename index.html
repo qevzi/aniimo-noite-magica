@@ -50,8 +50,15 @@ dialog{width:min(88vw,420px);border:1px solid white;border-radius:23px;backgroun
 .unlock-check{position:absolute;top:10px;right:10px;display:grid;place-items:center;width:20px;height:20px;border:1px solid #a095c4;border-radius:50%;color:transparent}
 .unlock-card:has(input:checked) .unlock-check{background:#5644a5;border-color:#5644a5;color:white}
 .unlock-submit{background:#5644a5;color:white;padding:8px 15px}.unlock-submit:hover{background:#433383}
-.unlock-result:not(:empty){margin:14px 0;padding:12px;border-radius:12px;background:#e8e1fa}.unlock-result ul{columns:2;padding-left:20px}
-@media(max-width:560px){.tabs{grid-template-columns:repeat(2,minmax(0,1fr))}.unlock-result ul{columns:1}}
+.unlock-result:not(:empty){margin:22px 0}
+.unlock-result h3{font-size:24px;margin-bottom:12px}
+.unlock-metrics{grid-template-columns:repeat(4,minmax(0,1fr))}
+.unlock-metrics .foot{margin-top:6px;font-weight:800}
+.unlock-pieces{margin:0;padding:0;list-style:none}
+.unlock-pieces .art{cursor:default}
+.unlock-quantity{display:inline-block;margin-top:6px;border-radius:8px;background:#e3dcfb;color:#46308c;padding:3px 9px;font-weight:800}
+@media(max-width:640px){.unlock-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.tabs{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
 </head>
 <body>
@@ -96,7 +103,7 @@ dialog{width:min(88vw,420px);border:1px solid white;border-radius:23px;backgroun
 <section class="panel unlocked-panel" id="panel-3" role="tabpanel" aria-labelledby="tab-3" hidden>
 <h2 class="catalog-title"></h2><p class="unlock-intro"></p>
 <form><div class="items unlock-grid"></div><button class="tab unlock-submit" type="submit"></button></form>
-<div class="unlock-result" aria-live="polite"></div>
+<div class="unlock-result" tabindex="-1" aria-live="polite"></div>
 <details class="credits unlock-credits"><summary></summary><p><a class="unlock-source" href="https://aniimotools.dev/systems/homeland/home-season/"></a> · <a class="unlock-rewards" href="https://aniimo.kr/en/systems/mystic-night-gathering-2026-11-12"></a> · <a class="unlock-load-source" href="https://aniimo.gg/homeland/object/wonder-night-ghostly-aroma/"></a></p></details>
 </section><details class="credits"><summary>Fontes das imagens e dos nomes</summary>
 <p>Ícones do jogo via <a href="https://aniimo.gg/">Aniimo.gg</a>. IDs e nomes em inglês conferidos no <a href="https://aniimoguide.com/homeland/furniture">Aniimo Guide</a> e no <a href="https://aniimotools.dev/systems/homeland/home-season/">Aniimo Tools</a>. Captura do evento via <a href="https://aniimo.kr/en/systems/magical-wonder-night-guide-2026-11-04">MOANIIMO</a>.</p>
@@ -423,29 +430,52 @@ function renderUnlocked(language) {
   result.replaceChildren();
   if (!unlockResult) return;
   const {points,count,load,pieces} = unlockResult;
-  const missing = 70000-points;
   const title = document.createElement('h3');
-  title.textContent = missing > 0
-    ? (en ? f(missing)+' points short of 70,000' : 'Faltam '+f(missing)+' pontos para 70.000')
-    : (en ? 'Layout reaches the target' : 'Montagem atinge a meta');
+  title.textContent = en ? 'Your layout' : 'Sua montagem';
   result.append(title);
-  const totals = document.createElement('p');
-  const cost = pieces.reduce((sum,item)=>sum+item.quantity*item.price,0);
-  totals.textContent = en
-    ? f(points)+' habitability · '+count+'/100 decorations · '+f(load)+'/80,000 load · '+f(cost)+' Jellybeans to buy all pieces'
-    : f(points)+' de habitabilidade · '+count+'/100 decorações · '+f(load)+'/80.000 de carga · '+f(cost)+' jujubas para comprar todas as peças';
+  if (!pieces.length) {
+    const hint = document.createElement('p');
+    hint.textContent = en ? 'Select furniture to build a layout.' : 'Selecione os móveis para montar seu plano.';
+    result.append(hint);
+    return;
+  }
+
+  const missing = Math.max(0, limits.points - points);
+  const status = missing
+    ? (en ? f(missing) + ' points to go' : 'Faltam ' + f(missing) + ' pontos')
+    : (en ? '✓ Target reached' : '✓ Meta atingida');
+  const cost = pieces.reduce((sum, item) => sum + item.quantity * item.price, 0);
+  const stats = [
+    [en ? 'Habitability' : 'Habitabilidade', points, limits.points, status],
+    [en ? 'Decorations' : 'Decorações', count, limits.count],
+    [en ? 'Load' : 'Carga', load, limits.load],
+    [en ? 'Cost in Jellybeans' : 'Custo em jujubas', cost]
+  ];
+  const metrics = document.createElement('div');
+  metrics.className = 'metrics unlock-metrics';
+  metrics.innerHTML = stats.map(([caption, value, max, note]) => {
+    const ratio = max ? Math.min(100, 100 * value / max) : 0;
+    return '<div class="metric"><small>' + caption + '</small><strong>' + f(value) +
+      (max ? ' <em>/ ' + f(max) + '</em>' : '') + '</strong>' +
+      (max ? '<div class="bar" aria-hidden="true"><div class="fill" style="width:' + ratio + '%"></div></div>' : '') +
+      (note ? '<span class="foot">' + note + '</span>' : '') + '</div>';
+  }).join('');
+  const furnitureHeading = document.createElement('h4');
+  furnitureHeading.className = 'catalog-title';
+  furnitureHeading.textContent = en ? 'Furniture to place' : 'Móveis para colocar';
   const list = document.createElement('ul');
+  list.className = 'items unlock-pieces';
   for (const item of pieces) {
     const row = document.createElement('li');
-    row.textContent = item.quantity+'× '+label(item.name);
+    row.className = 'item';
+    row.innerHTML = '<span class="art"><img alt=""></span><span class="name"><strong></strong><span class="unlock-quantity"></span></span>';
+    row.querySelector('img').src = unlockControls.get(item.name).card.querySelector('img').src;
+    row.querySelector('strong').textContent = label(item.name);
+    row.querySelector('.unlock-quantity').textContent = f(item.quantity) + '×';
+    row.querySelector('.unlock-quantity').setAttribute('aria-label', f(item.quantity) + (en ? ' to place' : ' para colocar'));
     list.append(row);
   }
-  result.append(totals,list);
-  if (missing > 0) {
-    const next = document.createElement('p');
-    next.textContent = en ? 'See the data sources for upcoming unlocks.' : 'Veja as fontes dos dados para consultar os próximos desbloqueios.';
-    result.append(next);
-  }
+  result.append(metrics, furnitureHeading, list);
 }
 const unlockForm = unlockPanel.querySelector('form');
 unlockForm.addEventListener('input', () => {
@@ -459,6 +489,7 @@ unlockForm.addEventListener('submit', event => {
   if (items.some(item => !Number.isInteger(item.load) || item.load < 0 || item.load > limits.load)) return;
   unlockResult = solveUnlocked(items);
   renderUnlocked(document.documentElement.lang);
+  unlockPanel.querySelector('.unlock-result').focus();
 });
 
 function setLanguage(language) {

@@ -697,8 +697,15 @@ html:not([lang="en-US"]) [data-mix="en"],html[lang="en-US"] :is([data-mix="pt"],
   .mixed-code-notice{position:static;margin:0 0 12px auto;width:min(100%,390px)}
 }
 @media print{.mixed-code-notice{display:none}}
-#mixed-code-region{margin-left:6px;padding:4px 8px;border:1px solid #d6c9f2;border-radius:8px;background:white;color:#423181;font:inherit}
-.mixed-code-body>label{font-size:12px;font-weight:800;color:#423181}
+.mixed-code-regions{min-width:0;margin:0 0 10px;padding:0;border:0}
+.mixed-code-regions legend{margin-bottom:5px;padding:0;color:#423181;font-size:11px;font-weight:800}
+#mixed-code-region{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;padding:4px;border-radius:999px;background:#e9e0f7}
+#mixed-code-region label{position:relative;cursor:pointer}
+#mixed-code-region input{position:absolute;width:1px;height:1px;opacity:0}
+#mixed-code-region label span{display:grid;place-items:center;min-height:32px;border-radius:999px;color:#49378d;font-size:12px;font-weight:800}
+#mixed-code-region label:hover span{background:#f7f2ff}
+#mixed-code-region input:checked + span{background:linear-gradient(145deg,#65539e,#443473);color:#fff;box-shadow:0 2px 6px #39256338}
+#mixed-code-region input:focus-visible + span{outline:2px solid #5742a0;outline-offset:2px}
 #mixed-code-type{margin-top:8px;font-weight:800;color:#423181}
 #mixed-code-credit{margin:8px 0 0}
 html[lang="ja-JP"] [data-mix]:not([data-mix="ja"]),html:not([lang="ja-JP"]) [data-mix="ja"]{display:none}
@@ -743,10 +750,14 @@ html[lang="ja-JP"] [data-mix]:not([data-mix="ja"]),html:not([lang="ja-JP"]) [dat
 <details class="mixed-code-notice" open>
   <summary><span aria-hidden="true" class="mixed-code-star">✦</span><span data-mix="pt">Decoração do RV</span><span data-mix="en">RV Park Layout</span><span data-mix="ja">RVパークのレイアウト</span></summary>
   <div class="mixed-code-body">
-    <label for="mixed-code-region"><span data-mix="pt">Servidor</span><span data-mix="en">Server</span><span data-mix="ja">サーバー</span></label>
-    <select id="mixed-code-region">
-      <option value="NA">NA</option><option value="EU">EU</option><option value="APAC">APAC</option>
-    </select>
+    <fieldset class="mixed-code-regions">
+      <legend><span data-mix="pt">Servidor</span><span data-mix="en">Server</span><span data-mix="ja">サーバー</span></legend>
+      <div id="mixed-code-region">
+        <label><input type="radio" name="rv-code-region" value="NA" checked><span>NA</span></label>
+        <label><input type="radio" name="rv-code-region" value="EU"><span>EU</span></label>
+        <label><input type="radio" name="rv-code-region" value="APAC"><span>APAC</span></label>
+      </div>
+    </fieldset>
     <p class="mixed-code-requirement"><span data-mix="pt">Use no Design do Lar do Estacionamento de Motorhomes. Confira se você tem os móveis necessários.</span><span data-mix="en">Use this code in RV Park Home Design. Check that you have the required furniture.</span><span data-mix="ja">RVパークのホームデザインで入力してください。必要な家具を所持しているか確認してください。</span></p>
     <p id="mixed-code-type"></p>
     <div class="mixed-code-actions">
@@ -779,7 +790,7 @@ html[lang="ja-JP"] [data-mix]:not([data-mix="ja"]),html:not([lang="ja-JP"]) [dat
   const status = document.querySelector('#mixed-code-status');
   const locale = () => ({'en-US':1,'ja-JP':2}[document.documentElement.lang] ?? 0);
   function renderCode() {
-    const [code,types,author,url] = codes[region.value];
+    const [code,types,author,url] = codes[region.querySelector(':checked').value];
     field.value = code;
     field.setAttribute('aria-label',['Código da decoração do RV','RV Park layout code','RVパークのレイアウトコード'][locale()]);
     document.querySelector('#mixed-code-type').textContent = types[locale()];

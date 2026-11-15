@@ -716,13 +716,14 @@ html:not([lang="en-US"]) [data-mix="en"],html[lang="en-US"] :is([data-mix="pt"],
 @media print{.mixed-code-notice{display:none}}
 .mixed-code-regions{min-width:0;margin:0 0 10px;padding:0;border:0}
 .mixed-code-regions legend{margin-bottom:5px;padding:0;color:#423181;font-size:11px;font-weight:800}
-#mixed-code-region{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;padding:4px;border-radius:999px;background:#e9e0f7}
-#mixed-code-region label{position:relative;cursor:pointer}
-#mixed-code-region input{position:absolute;width:1px;height:1px;opacity:0}
-#mixed-code-region label span{display:grid;place-items:center;min-height:32px;border-radius:999px;color:#49378d;font-size:12px;font-weight:800}
-#mixed-code-region label:hover span{background:#f7f2ff}
-#mixed-code-region input:checked + span{background:linear-gradient(145deg,#65539e,#443473);color:#fff;box-shadow:0 2px 6px #39256338}
-#mixed-code-region input:focus-visible + span{outline:2px solid #5742a0;outline-offset:2px}
+:is(#mixed-code-region,#mixed-code-format){display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;padding:4px;border-radius:999px;background:#e9e0f7}
+:is(#mixed-code-region,#mixed-code-format) label{position:relative;cursor:pointer}
+:is(#mixed-code-region,#mixed-code-format) input{position:absolute;width:1px;height:1px;opacity:0}
+:is(#mixed-code-region,#mixed-code-format) label > span{display:grid;place-items:center;min-height:32px;border-radius:999px;color:#49378d;font-size:12px;font-weight:800}
+:is(#mixed-code-region,#mixed-code-format) label:hover > span{background:#f7f2ff}
+:is(#mixed-code-region,#mixed-code-format) input:checked + span{background:linear-gradient(145deg,#65539e,#443473);color:#fff;box-shadow:0 2px 6px #39256338}
+:is(#mixed-code-region,#mixed-code-format) input:focus-visible + span{outline:2px solid #5742a0;outline-offset:2px}
+#mixed-code-format{grid-template-columns:repeat(2,minmax(0,1fr))}
 #mixed-code-type{margin-top:8px;font-weight:800;color:#423181}
 #mixed-code-credit{margin:8px 0 0}
 html[lang="ja-JP"] [data-mix]:not([data-mix="ja"]),html:not([lang="ja-JP"]) [data-mix="ja"]{display:none}
@@ -776,6 +777,13 @@ html[lang="ja-JP"] [data-mix]:not([data-mix="ja"]),html:not([lang="ja-JP"]) [dat
       </div>
     </fieldset>
     <p class="mixed-code-requirement"><span data-mix="pt">Use no Design do Lar do Estacionamento de Motorhomes. Confira se você tem os móveis necessários.</span><span data-mix="en">Use this code in RV Park Home Design. Check that you have the required furniture.</span><span data-mix="ja">RVパークのホームデザインで入力してください。必要な家具を所持しているか確認してください。</span></p>
+    <fieldset id="mixed-code-formats" class="mixed-code-regions">
+      <legend><span data-mix="pt">Tipo de importação</span><span data-mix="en">Import type</span><span data-mix="ja">読み込み形式</span></legend>
+      <div id="mixed-code-format">
+        <label><input type="radio" name="rv-code-format" value="set" checked><span><b data-mix="pt">Conjunto</b><b data-mix="en">Set</b><b data-mix="ja">セット</b></span></label>
+        <label><input type="radio" name="rv-code-format" value="blueprint"><span><b data-mix="pt">Projeto</b><b data-mix="en">Blueprint</b><b data-mix="ja">設計図</b></span></label>
+      </div>
+    </fieldset>
     <p id="mixed-code-type"></p>
     <div class="mixed-code-actions">
       <input id="mixed-code-value" type="text" readonly value="28AC4YF8" aria-label="RV Park layout code">
@@ -798,31 +806,42 @@ html[lang="ja-JP"] [data-mix]:not([data-mix="ja"]),html:not([lang="ja-JP"]) [dat
 <script>
 {
   const codes = {
-    NA: ['28AC4YF8',['Importe como Conjunto.','Import as a Set.','セットとして読み込んでください。']],
+    NA: {
+      set: ['28AC4YF8'],
+      blueprint: ['YT5MELA6',null,'@coelhie']
+    },
     EU: ['A28NNBMK',['Tipo não confirmado. Confira Conjuntos e Projetos.','Type unconfirmed. Check Sets and Blueprints.','形式未確認。「セット」と「設計図」を確認してください。'],'@JayJeopardyPer','https://www.youtube.com/@JayJeopardyPer'],
     APAC: ['X5VTRLYH',['Importe como Projeto (Blueprint).','Import as a Blueprint.','設計図として読み込んでください。'],'u/Real_Assumption_2204','https://www.reddit.com/user/Real_Assumption_2204/']
   };
   const region = document.querySelector('#mixed-code-region');
+  const formats = document.querySelector('#mixed-code-formats');
   const field = document.querySelector('#mixed-code-value');
   const status = document.querySelector('#mixed-code-status');
   const locale = () => ({'en-US':1,'ja-JP':2}[document.documentElement.lang] ?? 0);
   function renderCode() {
-    const [code,types,author,url] = codes[region.querySelector(':checked').value];
+    const server = region.querySelector(':checked').value;
+    formats.hidden = server !== 'NA';
+    const [code,types,author,url] = server === 'NA'
+      ? codes.NA[formats.querySelector(':checked').value]
+      : codes[server];
     field.value = code;
     field.setAttribute('aria-label',['Código da decoração do RV','RV Park layout code','RVパークのレイアウトコード'][locale()]);
-    document.querySelector('#mixed-code-type').textContent = types[locale()];
+    const type = document.querySelector('#mixed-code-type');
+    type.hidden = !types;
+    type.textContent = types?.[locale()] ?? '';
     const credit = document.querySelector('#mixed-code-credit');
     credit.hidden = !author;
     credit.replaceChildren();
     if (author) {
-      const name = document.createElement('a');
-      name.href = url;
+      const name = document.createElement(url ? 'a' : 'span');
+      if (url) name.href = url;
       name.textContent = author;
       credit.append(['Código por ', 'Code by ', 'コード提供：'][locale()], name);
     }
     status.textContent = '';
   }
   region.addEventListener('change',renderCode);
+  formats.addEventListener('change',renderCode);
   new MutationObserver(renderCode).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
   document.querySelector('#mixed-code-copy').addEventListener('click',async () => {
     const code = field.value;
